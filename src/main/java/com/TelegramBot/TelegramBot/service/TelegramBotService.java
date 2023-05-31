@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeDefault;
@@ -105,7 +106,15 @@ public class TelegramBotService extends TelegramLongPollingBot {
             if (userState.getDegree() != 0) {
                 userState.setNextState(WEIGHT_STEP);
                 userStateRepository.save(userState);
-                messageUtils.sendMessage(this, chatId, WEIGHT_STEP.toString(), messageId, update);
+                SendMessage message = SendMessage.builder()
+                        .chatId(chatId)
+                        .text(WEIGHT_STEP.toString())
+                        .build();
+                try {
+                    execute(message);
+                } catch (TelegramApiException e) {
+                    log.error(e.getMessage());
+                }
             }
         }
     }

@@ -43,7 +43,7 @@ public class MessageUtils {
 
     public void sendMessage(AbsSender absSender, long chatId, String text, int messageId, Update update) {
 
-        if (update.hasCallbackQuery() && update.getMessage() == null || update.getMessage().getChat().isUserChat()) {
+        if (update.getMessage().getChat().isUserChat()) {
             SendMessage message = SendMessage.builder()
                     .chatId(chatId)
                     .text(text)
