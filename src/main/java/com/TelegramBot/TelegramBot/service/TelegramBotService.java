@@ -5,6 +5,7 @@ import com.TelegramBot.TelegramBot.enums.State;
 import com.TelegramBot.TelegramBot.model.UserState;
 import com.TelegramBot.TelegramBot.repository.UserStateRepository;
 import com.TelegramBot.TelegramBot.service.user_state_handler.UserStateHandler;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -15,6 +16,7 @@ import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeDefault;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import javax.annotation.PostConstruct;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 import java.util.Optional;
@@ -23,6 +25,7 @@ import static com.TelegramBot.TelegramBot.enums.State.WEIGHT_STEP;
 
 @Component
 @Slf4j
+@RequiredArgsConstructor
 public class TelegramBotService extends TelegramLongPollingBot {
 
     private final ConfigBot configBot;
@@ -40,12 +43,8 @@ public class TelegramBotService extends TelegramLongPollingBot {
         return configBot.getBotKey();
     }
 
-    public TelegramBotService(ConfigBot configBot, UserStateRepository userStateRepository, List<UserStateHandler> handlers) {
-
-        this.configBot = configBot;
-        this.userStateRepository = userStateRepository;
-        this.handlers = handlers;
-
+    @PostConstruct
+    public void buttonSetUp() {
         try {
             execute(new SetMyCommands(List.of(
                     new BotCommand("/start", "Это только начало"),
@@ -156,7 +155,8 @@ public class TelegramBotService extends TelegramLongPollingBot {
 
             case "/help", "/help@ZeleleleleBobaBot" -> helpCommand(chatId, update, messageId);
 
-            case "/send_meme", "/send_meme@ZeleleleleBobaBot" -> messageUtils.sendPhoto(this, configBot, chatId, messageId, update);
+            case "/send_meme", "/send_meme@ZeleleleleBobaBot" ->
+                    messageUtils.sendPhoto(this, configBot, chatId, messageId, update);
             case "/calculate", "/calculate@ZeleleleleBobaBot" -> {
                 rollbackUserState(userState);
 
@@ -199,8 +199,8 @@ public class TelegramBotService extends TelegramLongPollingBot {
     }
 
     public void helpCommand(long chatId, Update update, int messageId) {
-            messageUtils.sendHLEP(this, configBot, chatId, messageId, update);
-            messageUtils.sendMessage(this, chatId, "Ви скозали ХЛЕП?", messageId, update);
+        messageUtils.sendHLEP(this, configBot, chatId, messageId, update);
+        messageUtils.sendMessage(this, chatId, "Ви скозали ХЛЕП?", messageId, update);
     }
 }
 
