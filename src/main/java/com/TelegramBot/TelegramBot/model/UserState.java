@@ -15,16 +15,10 @@ import javax.persistence.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Table(name = "user_session")
+@Table(name = "user_state")
 public class UserState {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "primary_id")
-    private long id;
-    @Column(name = "chat_id")
-    private String chatId;
-    @Column(name = "user_id")
-    private long userId;
+    @EmbeddedId
+    private Id id;
     @Column(name = "user_degree")
     private double degree;
     @Column(name = "user_weight")

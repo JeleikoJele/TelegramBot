@@ -21,7 +21,6 @@ public class WeightHandler extends MessageUtils implements UserStateHandler {
                              long chatId, UserStateRepository userStateRepository, int messageId, ConfigBot configBot) {
 
         try {
-
             if (Double.parseDouble(update.getMessage().getText()) <= 0) {
                 sendAudio(absSender, configBot, chatId, messageId, update);
                 sendMessage(absSender, chatId, "Ай ай ай, прекращай баловаться и укажи свой вес!", messageId, update);

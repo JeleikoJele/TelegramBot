@@ -3,6 +3,7 @@ package com.TelegramBot.TelegramBot.service;
 import com.TelegramBot.TelegramBot.config.ConfigBot;
 import com.TelegramBot.TelegramBot.enums.State;
 import com.TelegramBot.TelegramBot.model.UserState;
+import com.TelegramBot.TelegramBot.model.Id;
 import com.TelegramBot.TelegramBot.repository.UserStateRepository;
 import com.TelegramBot.TelegramBot.service.user_state_handler.UserStateHandler;
 import lombok.RequiredArgsConstructor;
@@ -73,11 +74,10 @@ public class TelegramBotService extends TelegramLongPollingBot {
             chatId = update.getMessage().getChatId();
             messageId = update.getMessage().getMessageId();
 
-            UserState userState = userStateRepository.findByUserId(userId);
-            if (userState == null || userState.getUserId() == 0) {
+            UserState userState = userStateRepository.findByIdChatIdAndIdUserId(chatId, userId);
+            if (userState == null) {
                 userState = UserState.builder()
-                        .chatId(String.valueOf(chatId))
-                        .userId(userId)
+                        .id(new Id(userId, chatId))
                         .build();
                 userStateRepository.save(userState);
             }
@@ -91,14 +91,7 @@ public class TelegramBotService extends TelegramLongPollingBot {
             receivedMessage = update.getCallbackQuery().getData();
             messageId = update.getCallbackQuery().getMessage().getMessageId();
 
-            UserState userState = userStateRepository.findByUserId(userId);
-            if (userState == null) {
-                userState = UserState.builder()
-                        .chatId(String.valueOf(chatId))
-                        .userId(userId)
-                        .build();
-                userStateRepository.save(userState);
-            }
+            UserState userState = userStateRepository.findByIdChatIdAndIdUserId(chatId, userId);
 
             chooseDegree(receivedMessage, userState);
 
@@ -120,9 +113,8 @@ public class TelegramBotService extends TelegramLongPollingBot {
 
     private void rollbackUserState(UserState userState) {
         UserState rolledBack = UserState.builder()
-                .id(userState.getId())
-                .userId(userState.getUserId())
-                .chatId(userState.getChatId())
+                .id(new Id(userState.getId().getUserId(),
+                        userState.getId().getChatId()))
                 .build();
 
         userStateRepository.save(rolledBack);
@@ -160,7 +152,7 @@ public class TelegramBotService extends TelegramLongPollingBot {
             case "/calculate", "/calculate@ZeleleleleBobaBot" -> {
                 rollbackUserState(userState);
 
-                if (userState.getUserId() == userId) {
+                if (userState.getId().getUserId() == userId && userState.getId().getChatId() == chatId) {
                     handlers.get(0).handleUpdate(this, update, userState, chatId, userStateRepository, messageId, configBot);
                 }
             }
@@ -172,7 +164,7 @@ public class TelegramBotService extends TelegramLongPollingBot {
     public void checkState(long chatId, Update update, UserState userState,
                            int messageId, long userId) {
 
-        if (userState.getUserId() == userId) {
+        if (userState.getId().getUserId() == userId && userState.getId().getChatId() == chatId) {
 
             switch (Optional.ofNullable(userState.getNextState()).orElse(State.NULL_STEP)) {
                 case WEIGHT_STEP -> handlers.get(1).handleUpdate(this, update, userState,
